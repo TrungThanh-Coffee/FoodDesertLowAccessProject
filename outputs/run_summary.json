@@ -1,0 +1,32 @@
+{
+  "project": "Food Desert / Low Food Access Risk",
+  "target_source": "PCT_LACCESS_POP10",
+  "project_label_definition": "LOW_ACCESS_RISK = 1 when PCT_LACCESS_POP10 >= 33%",
+  "warning": "This is a project-defined county screening label, not an official USDA food-desert designation.",
+  "run_mode": "all",
+  "supervised": {
+    "Algorithm": "Random Forest",
+    "Paradigm": "Supervised",
+    "Accuracy": 0.8251192368839427,
+    "Precision": 0.5588235294117647,
+    "Recall": 0.3220338983050847,
+    "F1": 0.40860215053763443,
+    "DecisionThreshold": 0.5249999999999999
+  },
+  "unsupervised": {
+    "Algorithm": "KMeans",
+    "Paradigm": "Unsupervised",
+    "Silhouette": 0.17328635162022074,
+    "ARI": 0.025345464319396587,
+    "MappedAccuracy_for_explanation": 0.6038816417435571
+  },
+  "semi_supervised": {
+    "Algorithm": "LabelPropagation",
+    "Paradigm": "Semi-supervised",
+    "Accuracy": 0.8028616852146264,
+    "Precision": 0.44,
+    "Recall": 0.1864406779661017,
+    "F1": 0.2619047619047619,
+    "LabeledFraction": 0.30031821797931585
+  }
+}

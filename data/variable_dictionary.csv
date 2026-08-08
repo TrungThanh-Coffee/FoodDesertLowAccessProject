@@ -1,0 +1,20 @@
+Category Name,Variable Name,Variable Code,Geography,Units
+Access and Proximity to Grocery Store,"Population, low access to store (%), 2010",PCT_LACCESS_POP10,CNTY10,Percent
+Access and Proximity to Grocery Store,"Low income & low access to store (%), 2010",PCT_LACCESS_LOWI10,CNTY10,Percent
+Access and Proximity to Grocery Store,"Households, no car & low access to store (%), 2010",PCT_LACCESS_HHNV10,CNTY10,Percent
+Store Availability,"Grocery stores/1,000 pop, 2011",GROCPTH11,CNTY10,"# per 1,000 pop"
+Store Availability,"Supercenters & club stores/1,000 pop, 2011",SUPERCPTH11,CNTY10,"# per 1,000 pop"
+Store Availability,"Convenience stores/1,000 pop, 2011",CONVSPTH11,CNTY10,"# per 1,000 pop"
+Store Availability,"Specialized food stores/1,000 pop, 2011",SPECSPTH11,CNTY10,"# per 1,000 pop"
+Store Availability,"SNAP-authorized stores/1,000 pop, 2012",SNAPSPTH12,CNTY10,"# per 1,000 pop"
+Store Availability,"WIC-authorized stores/1,000 pop, 2011",WICSPTH11,CNTY10,"# per 1,000 pop"
+Restaurant Availability and Expenditures,"Fast-food restaurants/1,000 pop, 2011",FFRPTH11,CNTY10,"# per 1,000 pop"
+Restaurant Availability and Expenditures,"Full-service restaurants/1,000 pop, 2011",FSRPTH11,CNTY10,Count
+Food Assistance,"SNAP benefits per capita, 2012",PC_SNAPBEN12,CNTY10,Dollars/capita
+Food Assistance,"Students eligible for free lunch (%), 2010",PCT_FREE_LUNCH10,CNTY10,Percent
+Health and Physical Activity,"Adult diabetes rate, 2008",PCT_DIABETES_ADULTS08,CNTY10,Percent
+Health and Physical Activity,"Recreation & fitness facilities/1,000 pop, 2011",RECFACPTH11,CNTY10,"# per 1,000 pop"
+Socioeconomic Characteristics,"Metro/nonmetro counties, 2010",METRO13,CNTY10,Legend
+Socioeconomic Characteristics,"% Population 65 years or older, 2010",PCT_65OLDER10,CNTY10,Percent
+Socioeconomic Characteristics,"% Population under age 18, 2010",PCT_18YOUNGER10,CNTY10,Percent
+Socioeconomic Characteristics,"Persistent-poverty counties, 2010",PERPOV10,CNTY10,Legend

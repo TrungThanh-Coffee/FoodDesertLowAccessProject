@@ -1,0 +1,11 @@
+{
+  "rows": 3143,
+  "columns_in_source_subset": 23,
+  "low_access_threshold_percent": 33.0,
+  "positive_count": 590,
+  "negative_count": 2553,
+  "positive_rate": 0.18771874005727013,
+  "target_mean_pct": 23.559330019080598,
+  "target_median_pct": 19.6859557262128,
+  "target_75th_percentile_pct": 29.581053710505053
+}
