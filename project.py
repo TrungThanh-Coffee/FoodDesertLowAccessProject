@@ -29,6 +29,21 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.semi_supervised import LabelPropagation
 
+# ============================================================================
+# 1. PROJECT CONFIGURATION
+# ============================================================================
+# RANDOM_STATE keeps the experiment reproducible.
+# LOW_ACCESS_THRESHOLD creates the project classification label:
+#   0 = Lower Risk
+#   1 = High Low-Food-Access Risk
+# TEST_SIZE reserves 20% of labeled data for testing.
+# LABELED_FRACTION controls how many training labels LabelPropagation can see.
+#
+# NOTE:
+# The 33% threshold is PROJECT-DEFINED for this ML assignment. It is not an
+# official USDA definition of a food desert.
+# ============================================================================
+
 RANDOM_STATE = 42
 LOW_ACCESS_THRESHOLD = 33.0
 TEST_SIZE = 0.20
@@ -68,6 +83,16 @@ LP_OUTPUT_DIR.mkdir(exist_ok=True)
 # ├── missing_values.csv
 # └── run_summary.json
 #
+# ============================================================================
+# 2. MODEL FEATURES
+# ============================================================================
+# These variables describe food stores, restaurants, food assistance, and
+# community characteristics.
+#
+# Low-access variables closely related to the target are intentionally excluded
+# from model inputs to prevent data leakage.
+# ============================================================================
+
 NUMERIC_FEATURES = [
     "GROCPTH11",
     "SUPERCPTH11",
@@ -96,6 +121,18 @@ LEAKAGE_COLUMNS = [
     "PCT_LACCESS_HHNV10",
 ]
 
+
+# ============================================================================
+# 3. DATA PREPROCESSING
+# ============================================================================
+# Numerical features:
+#   - Missing values -> median
+#   - Standardization -> StandardScaler
+#
+# Categorical features:
+#   - Missing values -> most frequent value
+#   - Encoding -> OneHotEncoder
+# ============================================================================
 
 def build_preprocessor():
     """Build a reproducible preprocessing pipeline."""
@@ -267,6 +304,13 @@ def choose_random_forest_threshold(X_train, y_train):
     return float(best_row["threshold"])
 
 
+# ============================================================================
+# 4. SUPERVISED LEARNING - RANDOM FOREST
+# ============================================================================
+# Uses labeled training data to classify counties into Lower Risk / High Risk.
+# Evaluation metrics: Accuracy, Precision, Recall, F1-score.
+# ============================================================================
+
 def train_supervised(df):
     """Train/evaluate Random Forest on an 80/20 stratified split."""
     X = df[MODEL_FEATURES].copy()
@@ -361,6 +405,13 @@ def train_supervised(df):
 
     return metrics, preprocessor, model, threshold, X_train, X_test, y_train, y_test
 
+
+# ============================================================================
+# 5. UNSUPERVISED LEARNING - KMEANS
+# ============================================================================
+# Uses only feature data during training; target labels are not provided.
+# Evaluation metrics: Silhouette Score and Adjusted Rand Index (ARI).
+# ============================================================================
 
 def train_unsupervised(df):
     """
@@ -464,6 +515,14 @@ def build_stratified_partial_labels(y_train, labeled_fraction):
     return y_partial, labeled_mask
 
 
+# ============================================================================
+# 6. SEMI-SUPERVISED LEARNING - LABEL PROPAGATION
+# ============================================================================
+# Only part of the training labels are visible.
+# Hidden labels are represented by -1 and inferred from nearby samples.
+# Evaluation metrics: Accuracy, Precision, Recall, F1-score.
+# ============================================================================
+
 def train_semisupervised(
     df,
     preprocessor,
@@ -530,6 +589,17 @@ def train_semisupervised(
 
     return metrics
 
+
+# ============================================================================
+# 7. PRACTICAL DECISION-SUPPORT OUTPUT
+# ============================================================================
+# Produces county risk rankings and intervention suggestions.
+#
+# IMPORTANT:
+# These recommendations support decision-making only. Predictive importance does
+# not prove causation; real deployment should be validated with local GIS,
+# transport, retailer, cost, and community data.
+# ============================================================================
 
 def solution_recommendation(row, medians, q75):
     """
@@ -663,6 +733,13 @@ def create_priority_and_solution_output(df, preprocessor, model, threshold):
     plt.close(fig)
 
 
+# ============================================================================
+# 8. SAVED MODEL-COMPARISON OUTPUTS
+# ============================================================================
+# Saves classification metrics, clustering metrics, and comparison charts.
+# A separate function below prints an easy-to-read comparison in the terminal.
+# ============================================================================
+
 def save_metric_comparison(supervised_metrics, semi_metrics, kmeans_metrics):
     classification_df = pd.DataFrame(
         [
@@ -720,6 +797,146 @@ def save_metric_comparison(supervised_metrics, semi_metrics, kmeans_metrics):
     fig.tight_layout()
     fig.savefig(OUTPUT_DIR / "08_model_comparison.png", dpi=160)
     plt.close(fig)
+
+
+
+
+def print_all_model_comparison(supervised, kmeans, semi):
+    """
+    Print a final comparison after option [4] runs all algorithms.
+
+    Classification models share Accuracy, Precision, Recall, and F1-score.
+    KMeans is unsupervised, so it is evaluated with Silhouette Score and ARI.
+    Therefore, KMeans should not be ranked directly against classifiers using
+    Accuracy alone.
+    """
+    section("FINAL MODEL COMPARISON")
+
+    # ------------------------------------------------------------------
+    # A. CLASSIFICATION MODELS
+    # ------------------------------------------------------------------
+    print(color("  CLASSIFICATION MODELS", "bold"))
+    print()
+
+    print(
+        f"  {'Algorithm':<20}"
+        f"{'Accuracy':>12}"
+        f"{'Precision':>12}"
+        f"{'Recall':>12}"
+        f"{'F1-score':>12}"
+    )
+    print(
+        f"  {'-'*20}"
+        f"{'-'*12}"
+        f"{'-'*12}"
+        f"{'-'*12}"
+        f"{'-'*12}"
+    )
+
+    print(
+        f"  {'Random Forest':<20}"
+        f"{supervised['Accuracy']:>12.2%}"
+        f"{supervised['Precision']:>12.2%}"
+        f"{supervised['Recall']:>12.2%}"
+        f"{supervised['F1']:>12.2%}"
+    )
+
+    print(
+        f"  {'LabelPropagation':<20}"
+        f"{semi['Accuracy']:>12.2%}"
+        f"{semi['Precision']:>12.2%}"
+        f"{semi['Recall']:>12.2%}"
+        f"{semi['F1']:>12.2%}"
+    )
+
+    # ------------------------------------------------------------------
+    # B. UNSUPERVISED MODEL
+    # ------------------------------------------------------------------
+    print()
+    print(color("  UNSUPERVISED MODEL", "bold"))
+    print()
+
+    print(
+        f"  {'Algorithm':<20}"
+        f"{'Silhouette':>14}"
+        f"{'ARI':>14}"
+        f"{'Mapped Acc.*':>16}"
+    )
+    print(
+        f"  {'-'*20}"
+        f"{'-'*14}"
+        f"{'-'*14}"
+        f"{'-'*16}"
+    )
+
+    print(
+        f"  {'KMeans':<20}"
+        f"{kmeans['Silhouette']:>14.4f}"
+        f"{kmeans['ARI']:>14.4f}"
+        f"{kmeans['MappedAccuracy_for_explanation']:>15.2%}"
+    )
+
+    print(color(
+        "  *Mapped Accuracy is only a post-clustering explanatory value.",
+        "dim",
+    ))
+
+    # ------------------------------------------------------------------
+    # C. AUTOMATIC EVALUATION
+    # ------------------------------------------------------------------
+    section("MODEL EVALUATION")
+
+    # Choose the better classifier using F1 because the positive class is
+    # imbalanced and Accuracy alone can be misleading.
+    if supervised["F1"] >= semi["F1"]:
+        best_classifier = "Random Forest"
+        best_f1 = supervised["F1"]
+    else:
+        best_classifier = "LabelPropagation"
+        best_f1 = semi["F1"]
+
+    print(
+        color("  Best classification model : ", "green")
+        + f"{best_classifier} (F1 = {best_f1:.2%})"
+    )
+
+    print(
+        "  Classification focus      : "
+        "Use Recall and F1 together with Accuracy because High Risk is a minority class."
+    )
+
+    # Interpret the KMeans clustering metrics without treating KMeans as a
+    # supervised classifier.
+    silhouette = kmeans["Silhouette"]
+    ari = kmeans["ARI"]
+
+    if silhouette >= 0.50:
+        silhouette_text = "well-separated clusters"
+    elif silhouette >= 0.25:
+        silhouette_text = "moderately separated clusters"
+    else:
+        silhouette_text = "weakly separated / overlapping clusters"
+
+    if ari >= 0.50:
+        ari_text = "strong agreement with target classes"
+    elif ari >= 0.20:
+        ari_text = "limited agreement with target classes"
+    else:
+        ari_text = "very weak agreement with target classes"
+
+    print(
+        f"  KMeans interpretation    : {silhouette_text}; {ari_text}."
+    )
+
+    # ------------------------------------------------------------------
+    # D. PRACTICAL CONCLUSION
+    # ------------------------------------------------------------------
+    print()
+    print(color("  PRACTICAL CONCLUSION", "bold"))
+    print("  - Random Forest: best choice when sufficient labeled data are available.")
+    print("  - LabelPropagation: useful when only part of the training data is labeled.")
+    print("  - KMeans: useful for exploratory grouping, not a direct classifier replacement.")
+    print("  - For risk screening, prioritize Recall/F1 rather than Accuracy alone.")
 
 
 
@@ -940,6 +1157,15 @@ def choose_from_menu():
 
 
 def run_selected(mode):
+    """
+    Run the experiment selected by the user.
+
+    mode:
+      "rf"     -> Random Forest only
+      "kmeans" -> KMeans only
+      "lp"     -> LabelPropagation only
+      "all"    -> Run all three models and print the final comparison
+    """
     banner()
 
     section("LOADING DATA")
@@ -1063,6 +1289,7 @@ def run_selected(mode):
 
         print_lp_result(semi)
 
+        # Save comparison files/charts to the shared outputs directory.
         section("MODEL COMPARISON")
         save_metric_comparison(supervised, semi, kmeans)
 
@@ -1070,6 +1297,12 @@ def run_selected(mode):
         print("  KMeans metrics          : outputs/kmeans/clustering_metrics.csv")
         print("  Comparison chart        : outputs/08_model_comparison.png")
 
+        # Show a readable comparison table and automatic evaluation directly
+        # in the terminal. This appears only for option [4] Run ALL algorithms.
+        print_all_model_comparison(supervised, kmeans, semi)
+
+        # Generate county-level risk ranking and practical intervention ideas
+        # using the trained Random Forest model.
         create_priority_and_solution_output(
             df,
             preprocessor,
@@ -1109,6 +1342,18 @@ def parse_args():
 
 
 def main():
+    """
+    Application entry point.
+
+    Interactive mode:
+      The menu remains active until the user explicitly selects Exit.
+
+    Command-line mode:
+      python project.py --model rf
+      python project.py --model kmeans
+      python project.py --model lp
+      python project.py --model all
+    """
     args = parse_args()
 
     # Direct command-line mode:
